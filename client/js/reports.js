@@ -14013,6 +14013,7 @@ class Canvas extends VisualizationsCanvas {
 
 					this.addVisualizationForm.reset();
 					this.addVisualizationsMultiselect.clear();
+					this.addVisualizationsMultiselect.container.querySelector('.options').classList.add('hidden');
 
 					this.addVisualizationForm.classList.toggle('hidden');
 					return;
@@ -14323,6 +14324,7 @@ class Canvas extends VisualizationsCanvas {
 		this.container.classList.toggle('editing', this.editing);
 		this.container.querySelector('.reorder').classList.toggle('hidden', !this.editing);
 		this.container.querySelector('.add-new').classList.toggle('hidden', !this.editing);
+		this.container.querySelector('.full-screen').classList.toggle('hidden', this.editing);
 
 		if(this.addVisualizationForm) {
 
