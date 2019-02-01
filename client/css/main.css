@@ -1515,9 +1515,6 @@ body#tinymce table tr {
 	flex-direction: column;
 	padding: calc(var(--gap) * 2);
 }
-	.add-translations-container label {
-		margin: var(--gap);
-	}
 	.add-translations-container .translation-editor-label {
 		max-width: unset;
 	}
@@ -1545,7 +1542,7 @@ body#tinymce table tr {
 }
 #phrases-translations #translations-headers {
 	margin-top: 10px;
-	padding: var(--gap);
+	padding: var(--gap) 0;
 }
 #phrases-translations .translation-headers {
 	background: var(--color-surface);

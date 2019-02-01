@@ -4362,15 +4362,14 @@ class TranslationsManager extends Map {
 
 		container.querySelector('.add').addEventListener('click', () => {
 
+			container.querySelector('#list-container').classList.add('hidden');
 			container.querySelector('#add-translation-form-container').classList.remove('hidden');
-			container.querySelector('#list-container .add').classList.add('hidden');
 		});
 
 		container.querySelector('.translations-list-view .back').addEventListener('click', () => {
 
 			container.querySelector('#list-container').classList.remove('hidden');
 			container.querySelector('#add-translation-form-container').classList.add('hidden');
-			container.querySelector('#list-container .add').classList.remove('hidden');
 		});
 
 		this.form = container.querySelector('#add-translation-form');
@@ -4383,7 +4382,6 @@ class TranslationsManager extends Map {
 
 			container.querySelector('#list-container').classList.remove('hidden');
 			container.querySelector('#add-translation-form-container').classList.add('hidden');
-			container.querySelector('#list-container .add').classList.remove('hidden');
 		});
 
 		return container;
@@ -4765,7 +4763,11 @@ class ObjectTranslationRow {
 					</span>
 				</label>
 				<label>
-					<span title="Delete" class="action red"><i class="far fa-trash-alt"></i></span>
+					<span>
+						<button type="button" class="action red">
+							<i class="far fa-trash-alt"></i>
+						</button>
+					</span>
 				</label>
 			</div>
 		`;
@@ -4784,14 +4786,16 @@ class ObjectTranslationRow {
 		container.querySelector('.translation-grid').style.gridTemplateColumns = this.page.translationRowGridTemplateColumns;
 		container.querySelector('.locales').appendChild(this.page.select(this.locale_id));
 
-		container.querySelector('.red').addEventListener('click', async e => {
+		container.querySelector('.red').removeEventListener('click', ObjectTranslationRow.deleteEventListener);
+		container.querySelector('.red').addEventListener('click', ObjectTranslationRow.deleteEventListener = async e => {
 
 			await this.delete();
 		});
 
 		this.form = container;
 
-		container.addEventListener('submit', async e => {
+		container.removeEventListener('submit', ObjectTranslationRow.submitListener);
+		container.addEventListener('submit', ObjectTranslationRow.submitListener = async e => {
 
 			e.preventDefault();
 
@@ -4885,7 +4889,7 @@ class ObjectTranslationRow {
 
 			await this.expanded(this.formContainer.querySelector('.translation-editor-label > div'), 'translation');
 		});
-		-
+
 			this.formContainer.querySelector('.translations-list-view .back').addEventListener('click', () => {
 
 				this.page.container.querySelector(`#${'form-' + this.id}`).classList.add('hidden');
@@ -4941,6 +4945,8 @@ class ObjectTranslationRow {
 	}
 
 	async update(params) {
+
+		debugger;
 
 		const data = {
 			method: 'POST',
