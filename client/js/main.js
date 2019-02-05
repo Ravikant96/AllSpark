@@ -2561,6 +2561,14 @@ class MultiSelect {
 
 		search.on('keyup', e => {
 
+			if(!this.optionsContainer) {
+
+				container.appendChild(this.options);
+				this.render();
+			}
+
+			this.options.classList.remove('hidden');
+
 			if(e.which == 13 || e.key_code == 13) {
 
 				return this.all();
@@ -2568,8 +2576,6 @@ class MultiSelect {
 
 			this.recalculate()
 		});
-
-		search.on('focus', () => search.click());
 
 		document.body.on('click', () => {
 
