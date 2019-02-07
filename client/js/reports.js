@@ -653,7 +653,7 @@ class DataSource {
 			const elementsToShow = [
 				expandToggle,
 				queryToggle,
-				menu.querySelector('.define-visualization')
+				menu.querySelector('.define-visualization'),
 			];
 
 			for(const element of elementsToShow) {
@@ -668,7 +668,7 @@ class DataSource {
 				menu.querySelector('.define-visualization'),
 				menu.querySelector('.configure-visualization'),
 				expandToggle,
-				queryToggle
+				queryToggle,
 			];
 
 			for(const element of elementsToHide) {
@@ -2273,7 +2273,7 @@ class DataSourceColumn {
 				this.edit();
 			});
 
-			edit.innerHTML = `&#8285;`;
+			edit.innerHTML = '&#8285;';
 
 			this.container.querySelector('.label').appendChild(edit);
 		}
@@ -6009,7 +6009,7 @@ class Visualization {
 
 		this.subReportDialogBox.body.textContent = null;
 
-		const visualizationCanvas =  new VisualizationsCanvas(this.related_visualizations, page, this);
+		const visualizationCanvas =  new RelatedVisualizationsCanvas(this.related_visualizations, page, this);
 		this.subReportDialogBox.body.appendChild(visualizationCanvas.container);
 
 		await visualizationCanvas.load();
@@ -14019,12 +14019,12 @@ class VisualizationsCanvas extends DataSourceCanvas {
 
 			add.classList.toggle('selected');
 
-			if(this.addVisualizationsForm) {
+			if(this.addVisualizationForm) {
 
-				return this.addVisualizationsForm.classList.toggle('hidden');
+				return this.addVisualization.classList.toggle('hidden');
 			}
 
-			container.insertBefore(this.addVisualizations, this.list);
+			container.insertBefore(this.addVisualization, this.list);
 		});
 
 		document.on('fullscreenchange', this.keyUpListener = e => {
@@ -14035,15 +14035,15 @@ class VisualizationsCanvas extends DataSourceCanvas {
 		return container;
 	}
 
-	get addVisualizations() {
+	get addVisualization() {
 
-		if(this.addVisualizationsForm) {
+		if(this.addVisualizationForm) {
 
-			return this.addVisualizationsForm;
+			return this.addVisualizationForm;
 		}
 
 		const
-			form = this.addVisualizationsForm = document.createElement('form'),
+			form = this.addVisualizationForm = document.createElement('form'),
 			datalist = this.possibleVisualizations.map(v => ({
 			value: v.visualization_id,
 			name: v.name,
@@ -14052,7 +14052,7 @@ class VisualizationsCanvas extends DataSourceCanvas {
 		;
 
 		form.classList.add('form');
-		this.addVisualizationsMultiselect = new MultiSelect({datalist, multiple: false});
+		this.addVisualizationMultiselect = new MultiSelect({datalist, multiple: false});
 
 		form.innerHTML = `
 			<label class="visualization">
@@ -14088,13 +14088,17 @@ class VisualizationsCanvas extends DataSourceCanvas {
 			this.insert();
 		});
 
-		form.querySelector('.visualization').appendChild(this.addVisualizationsMultiselect.container);
-		this.addVisualizationsMultiselect.render();
+		form.querySelector('.visualization').appendChild(this.addVisualizationMultiselect.container);
+		this.addVisualizationMultiselect.render();
 
 		return form;
 	}
 
 	async load() {
+
+		this.loadedVisualizations.clear();
+
+		this.visualizations = this.owner.related_visualizations;
 
 		await this.fetchDataSource();
 		this.render();
@@ -14226,14 +14230,14 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					currentParameters = {
 						id: current.id,
 						format: JSON.stringify(current.format),
-						owner: 'visualization',
-						owner_id: this.visualizations[0].owner_id
+						owner: this.owner.owner_type,
+						owner_id: this.owner.owner_id
 					},
 					previousParameters = {
 						id: previous.id,
 						format: JSON.stringify(previous.format),
-						owner: 'visualization',
-						owner_id: this.visualizations[0].owner_id
+						owner: this.owner.owner_type,
+						owner_id: this.owner.owner_id
 					},
 					options = {
 						method: 'POST',
@@ -14273,14 +14277,14 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					currentParameters = {
 						id: current.id,
 						format: JSON.stringify(current.format),
-						owner: 'visualization',
-						owner_id: this.visualizations[0].owner_id
+						owner: this.owner.owner_type,
+						owner_id: this.owner.owner_id
 					},
 					nextParameters = {
 						id: next.id,
 						format: JSON.stringify(next.format),
-						owner: 'visualization',
-						owner_id: this.visualizations[0].owner_id
+						owner: this.owner.owner_type,
+						owner_id: this.owner.owner_id
 					},
 					options = {
 						method: 'POST',
@@ -14353,9 +14357,9 @@ class VisualizationsCanvas extends DataSourceCanvas {
 		this.container.querySelector('.add-new').classList.toggle('hidden', !this.editing);
 		this.container.querySelector('.full-screen').classList.toggle('hidden', this.editing);
 
-		if(this.addVisualizationsForm) {
+		if(this.addVisualizationForm) {
 
-			this.addVisualizationsForm.classList.add('hidden');
+			this.addVisualization.classList.add('hidden');
 			this.container.querySelector('.add-new').classList.remove('selected');
 		}
 
@@ -14472,11 +14476,6 @@ class VisualizationsCanvas extends DataSourceCanvas {
 			this.possibleVisualizations.push(...x.visualizations.filter(v => v.visualization_id)
 			)
 		);
-
-		if(this.owner.owner_type == 'visualization') {
-
-			this.possibleVisualizations = this.possibleVisualizations.filter(x => x.visualization_id != this.owner.visualization_id);
-		}
 	}
 
 	async save(report) {
@@ -14489,8 +14488,8 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					height: report.resize_dimentions.height.value,
 					width: report.resize_dimentions.width.value,
 				}),
-				owner: 'visualization',
-				owner_id: this.visualizations[0].owner_id,
+				owner: this.owner.owner_type,
+				owner_id: this.owner.owner_id
 			},
 			options = {
 				method: 'POST',
@@ -14531,8 +14530,8 @@ class VisualizationsCanvas extends DataSourceCanvas {
 			const parameters = {
 				id: visualization.id,
 				format: JSON.stringify(visualization.format),
-				owner: 'visualization',
-				owner_id: this.visualizations[0].owner_id
+				owner: this.owner.owner_type,
+				owner_id: this.owner.owner_id
 			};
 
 			promises.push(API.call('reports/dashboard/update', parameters, {method:'POST'}));
@@ -14569,7 +14568,7 @@ class VisualizationsCanvas extends DataSourceCanvas {
 
 	async insert() {
 
-		const visualization_id = parseInt(this.addVisualizationsMultiselect.value[0]);
+		const visualization_id = parseInt(this.addVisualizationMultiselect.value[0]);
 
 		if(this.visualizations.some(d => d.visualization_id == visualization_id)) {
 
@@ -14593,12 +14592,12 @@ class VisualizationsCanvas extends DataSourceCanvas {
 		const
 			parameters = {
 				owner: this.owner.owner_type,
-				owner_id: this.owner.visualization_id,
+				owner_id: this.owner.owner_id,
 				visualization_id: visualization_id,
 				format: JSON.stringify({
-					position: parseInt(this.addVisualizationsForm.position.value) || 1,
-					width: parseInt(this.addVisualizationsForm.width.value) || 32,
-					height: parseInt(this.addVisualizationsForm.height.value) || 10
+					position: parseInt(this.addVisualization.position.value) || 1,
+					width: parseInt(this.addVisualization.width.value) || 32,
+					height: parseInt(this.addVisualization.height.value) || 10
 				})
 			};
 
@@ -14606,7 +14605,7 @@ class VisualizationsCanvas extends DataSourceCanvas {
 
 			await API.call('reports/dashboard/insert', parameters, {method: 'POST'});
 
-			await this.loadVisualizations();
+			await this.load();
 
 			new SnackBar({
 				message: 'New Visualization Added',
@@ -14625,23 +14624,40 @@ class VisualizationsCanvas extends DataSourceCanvas {
 			throw e;
 		}
 
-		this.addVisualizationsForm.reset();
-		this.addVisualizationsMultiselect.clear();
+		this.addVisualization.reset();
+		this.addVisualizationMultiselect.clear();
+	}
+}
+
+class RelatedVisualizationsCanvas extends VisualizationsCanvas {
+
+	constructor(visualizations, page, owner) {
+
+		super(visualizations, page, owner);
+
+		this.owner.owner_type = 'visualization';
+		this.owner.owner_id = this.owner.visualization_id;
 	}
 
-	async loadVisualizations() {
+	async fetchDataSource() {
 
-		if(this.owner.owner_type == 'visualization') {
+		await super.fetchDataSource();
 
-			await DataSource.load(true);
-
-			[this.owner] = DataSource.list.get(this.owner.query_id).visualizations.filter(x => x.visualization_id == this.owner.visualization_id);
-			this.visualizations = this.owner.related_visualizations;
-			this.loadedVisualizations = new Map();
-		}
-
-		await this.load();
+		this.possibleVisualizations = this.possibleVisualizations.filter(x => x.visualization_id != this.owner.visualization_id);
 	}
+
+	async load() {
+
+		await DataSource.load(true);
+
+		[this.owner] = DataSource.list.get(this.owner.query_id).visualizations.filter(x => x.visualization_id == this.owner.visualization_id);
+
+		await super.load();
+	}
+}
+
+class DashboardCanvas extends VisualizationsCanvas {
+
 }
 
 class DataSourceFilterForm {

@@ -1702,9 +1702,9 @@ button[disabled] {
 .sub-reports-dialog .dialog-box {
 	width: 70%;
 }
-		.sub-reports-dialog .dialog-box .body .visualization-canvas {
-			padding: calc(var(--gap) * 2);
-		}
+	.sub-reports-dialog .dialog-box .body .visualization-canvas {
+		padding: calc(var(--gap) * 2);
+	}
 .visualization-canvas {
 	position: relative;
 	display: flex;
@@ -1741,9 +1741,6 @@ button[disabled] {
 		margin-bottom: calc(var(--gap) * 2);
 		grid-gap: calc(var(--gap) * 2);
 	}
-		.visualization-canvas > form label {
-			grid-template-rows: max-content max-content;
-		}
 		.visualization-canvas > form label.visualization {
 			max-width: 250px;
 		}

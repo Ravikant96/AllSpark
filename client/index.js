@@ -1274,7 +1274,11 @@ router.get('/settings/:tab?/:id?', API.serve(class extends HTMLAPI {
 
 		super();
 
-		this.stylesheets.push('/css/settings.css', '/css/settings-manager.css', 'css/reports.css');
+		this.stylesheets.push(
+			'/css/settings.css',
+			'/css/settings-manager.css',
+			'css/reports.css'
+		);
 
 		this.scripts.push(
 			'/js/reports.js',
