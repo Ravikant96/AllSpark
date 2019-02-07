@@ -3940,7 +3940,7 @@ ReportConnection.types.set('api', class ReportConnectionAPI extends ReportConnec
 
 			<label>
 				<span>Result Selector</span>
-				<input name="selector">
+				<input name="selector" type="text">
 			</label>
 		`;
 
