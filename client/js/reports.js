@@ -14230,14 +14230,14 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					currentParameters = {
 						id: current.id,
 						format: JSON.stringify(current.format),
-						owner: this.owner.owner_type,
-						owner_id: this.owner.owner_id
+						owner: this.owner_type,
+						owner_id: this.owner_id
 					},
 					previousParameters = {
 						id: previous.id,
 						format: JSON.stringify(previous.format),
-						owner: this.owner.owner_type,
-						owner_id: this.owner.owner_id
+						owner: this.owner_type,
+						owner_id: this.owner_id
 					},
 					options = {
 						method: 'POST',
@@ -14277,14 +14277,14 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					currentParameters = {
 						id: current.id,
 						format: JSON.stringify(current.format),
-						owner: this.owner.owner_type,
-						owner_id: this.owner.owner_id
+						owner: this.owner_type,
+						owner_id: this.owner_id
 					},
 					nextParameters = {
 						id: next.id,
 						format: JSON.stringify(next.format),
-						owner: this.owner.owner_type,
-						owner_id: this.owner.owner_id
+						owner: this.owner_type,
+						owner_id: this.owner_id
 					},
 					options = {
 						method: 'POST',
@@ -14488,8 +14488,8 @@ class VisualizationsCanvas extends DataSourceCanvas {
 					height: report.resize_dimentions.height.value,
 					width: report.resize_dimentions.width.value,
 				}),
-				owner: this.owner.owner_type,
-				owner_id: this.owner.owner_id
+				owner: this.owner_type,
+				owner_id: this.owner_id
 			},
 			options = {
 				method: 'POST',
@@ -14530,8 +14530,8 @@ class VisualizationsCanvas extends DataSourceCanvas {
 			const parameters = {
 				id: visualization.id,
 				format: JSON.stringify(visualization.format),
-				owner: this.owner.owner_type,
-				owner_id: this.owner.owner_id
+				owner: this.owner_type,
+				owner_id: this.owner_id
 			};
 
 			promises.push(API.call('reports/dashboard/update', parameters, {method:'POST'}));
@@ -14591,8 +14591,8 @@ class VisualizationsCanvas extends DataSourceCanvas {
 
 		const
 			parameters = {
-				owner: this.owner.owner_type,
-				owner_id: this.owner.owner_id,
+				owner: this.owner_type,
+				owner_id: this.owner_id,
 				visualization_id: visualization_id,
 				format: JSON.stringify({
 					position: parseInt(this.addVisualization.position.value) || 1,
@@ -14635,8 +14635,8 @@ class RelatedVisualizationsCanvas extends VisualizationsCanvas {
 
 		super(visualizations, page, owner);
 
-		this.owner.owner_type = 'visualization';
-		this.owner.owner_id = this.owner.visualization_id;
+		this.owner_type = 'visualization';
+		this.owner_id = this.owner.visualization_id;
 	}
 
 	async fetchDataSource() {
