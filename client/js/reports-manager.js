@@ -8432,6 +8432,152 @@ ReportTransformation.types.set('row-limit', class RowLimitTransformation extends
 
 });
 
+ReportTransformation.types.set('forecast', class ReportTransformationRestrictColumns extends ReportTransformation {
+
+	constructor(...parameters) {
+
+		super(...parameters);
+
+		this.multiSelectTiming = new MultiSelect({multiple: false, expand: true});
+		this.multiSelectOtherColumns = new MultiSelect({multiple: true, expand: true});
+
+		if (!this.columns) {
+
+			this.columns = {};
+		}
+	}
+
+	get key() {
+
+		return 'forecast'
+	}
+
+	get container() {
+
+		if (this.containerElement) {
+
+			return this.containerElement;
+		}
+
+		const
+			container = super.container.querySelector('.transformation'),
+			columns = document.createElement('div'),
+			label = document.createElement('label');
+
+		columns.classList.add('columns', 'form');
+
+		const spanTiming = document.createElement('span');
+		spanTiming.textContent = 'Timing Column';
+
+		const spanForecastColumns = document.createElement('span');
+		spanForecastColumns.textContent = 'Forecast Columns';
+
+		label.classList.add('forecast');
+
+		columns.appendChild(spanTiming);
+		columns.appendChild(this.multiSelectTiming.container);
+		columns.appendChild(spanForecastColumns);
+		columns.appendChild(this.multiSelectOtherColumns.container);
+
+		columns.insertAdjacentHTML('beforeend', `
+				<label>
+					<span>Extrapolate X By Units</span>
+					<input class="extrapolate-units" type="number" step="1" min="0" value=${this.columns.extrapolate || 0}>
+				</label>
+				
+				<label>
+					<span>X offset</span>
+					<input class="timing-offset" type="number" step="1" max="0" value=${this.columns.timingOffset || 0}>
+				</label>
+				
+				<label>
+					<span>
+						<input class="merge-extrapolation" type="checkbox" ${this.columns.mergeExtrapolation ? 'checked' : ''}>
+						<span>Merge Forecast Column</span>
+					</span>
+				</label>
+				
+				<label>
+					<span>
+						<input class="hide-upper" type="checkbox" ${this.columns.hideUpperLimit ? 'checked' : ''}>
+						<span>Hide Lower Limit Column</span>
+					</span>
+				</label>
+				
+				<label>
+					<span>
+						<input class="hide-lower" type="checkbox" ${this.columns.hideLowerLimit ? 'checked' : ''}>
+						<span>Hide Upper LimitColumn</span>
+					</span>
+				</label>
+				`);
+
+		container.appendChild(columns);
+
+		this.render();
+
+		return super.container;
+	}
+
+	render() {
+
+		const datalist = [];
+
+		for (const column of this.incoming.columns.values()) {
+
+			datalist.push({
+				name: column.name,
+				value: column.key,
+			});
+		}
+
+		this.multiSelectTiming.datalist = datalist;
+
+		this.multiSelectTiming.render();
+
+		if (this.columns.timing && this.multiSelectTiming.datalist.filter(x => x.value == this.columns.timing)) {
+
+			this.multiSelectTiming.value = this.columns.timing;
+		}
+
+		this.multiSelectOtherColumns.datalist = JSON.parse(JSON.stringify(datalist)).filter(x => x.value != this.columns.timing);
+
+		this.multiSelectOtherColumns.render();
+
+		if (this.columns && this.columns.data && this.columns.data.length && this.multiSelectOtherColumns.datalist.filter(x => this.columns.data.includes(x.value))) {
+
+			this.multiSelectOtherColumns.value = this.columns.data;
+		}
+
+		const that = this;
+
+		this.multiSelectTiming.on('change', () => {
+			if (that.multiSelectTiming.value && that.multiSelectTiming.value.length) {
+				that.multiSelectOtherColumns.datalist = that.multiSelectTiming.datalist.filter(x => x.value != that.multiSelectTiming.value[0]);
+				that.multiSelectOtherColumns.render();
+				that.multiSelectOtherColumns.value = that.multiSelectOtherColumns.value.length ? that.multiSelectOtherColumns.value : that.columns.data;
+			}
+		});
+	}
+
+	get json() {
+
+		return {
+			type: this.key,
+			columns: {
+				timing: this.multiSelectTiming.value[0],
+				data: this.multiSelectOtherColumns.value,
+				extrapolate: (this.container.querySelector('.extrapolate-units') || {value: 0}).value,
+				offset: (this.container.querySelector('.timing-offset') || {value: 0}).value,
+				mergeExtrapolation: (this.container.querySelector('.merge-extrapolation') || {checked: 0}).checked || 0,
+				hideUpperLimit: (this.container.querySelector('.hide-upper') || {checked: 0}).checked,
+				hideLowerLimit: (this.container.querySelector('.hide-lower') || {checked: 0}).checked,
+			},
+			backend_transformation: true
+		};
+	};
+});
+
 class ReportVisualizationDashboards extends Set {
 
 	constructor(stage) {
@@ -8700,6 +8846,15 @@ class ReportVisualizationDashboard {
 			return this.formContainer;
 
 		const form = this.formContainer = document.createElement('form');
+
+		if(!this.visualization.format) {
+
+			this.visualization.format = {
+				width :'',
+				height:'',
+				position: ''
+			}
+		}
 
 		form.classList.add('subform', 'form');
 

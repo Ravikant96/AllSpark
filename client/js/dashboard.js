@@ -918,6 +918,17 @@ class Dashboard {
 
 	static sortVisualizations(visibleVisuliaztions) {
 
+		if(!visibleVisuliaztions.length) {
+
+			return visibleVisuliaztions;
+		}
+
+		visibleVisuliaztions.forEach(x => x.format = x.format || {
+			position: '',
+			height: '',
+			width: ''
+		})
+
 		return visibleVisuliaztions.sort((v1, v2) => v1.format.position - v2.format.position);
 	}
 

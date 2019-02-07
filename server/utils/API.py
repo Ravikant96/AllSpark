@@ -3,6 +3,7 @@ from flask import request
 import config
 from .common_functions import get_function_signature
 
+
 class API(Principal):
     def __init__(self):
         """log API """
@@ -12,8 +13,16 @@ class API(Principal):
         self.config = config
 
         if self.request.method == 'POST':
-            form_data = {i: dict(self.request.form)[i] if len(dict(self.request.form)[i]) > 1 else dict(self.request.form)[i][0] for i in dict(self.request.form or {})}
-            request_json = {i: dict(self.request.json)[i] if len(dict(self.request.json)[i]) > 1 else dict(self.request.json)[i][0] for i in dict(self.request.json or {})}
+            form_data = {
+                i: dict(self.request.form)[i] if len(dict(self.request.form)[i]) > 1 else dict(self.request.form)[i][0]
+                for i in dict(self.request.form or {})
+            }
+
+            request_json = {
+                i: dict(self.request.json)[i] if len(dict(self.request.json)[i]) > 1 else dict(self.request.json)[i]
+                for i in dict(self.request.json or {})
+            }
+
             form_data.update(request_json)
 
             for i in self.request.files:
@@ -21,7 +30,11 @@ class API(Principal):
 
         else:
 
-            form_data = {i: dict(self.request.values)[i] if len(dict(self.request.values)[i]) > 1 else dict(self.request.values)[i][0] for i in dict(request.values or {})}
+            form_data = {
+                i: dict(self.request.values)[i] if len(dict(self.request.values)[i]) > 1 else
+                dict(self.request.values)[i][0] for i in dict(request.values or {})
+            }
+
         self.host = request.headers['Host']
         self.formatted_request_body = form_data
 

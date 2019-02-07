@@ -360,6 +360,14 @@ function promiseTimeout(promise, seconds, rejectPromise = () => Promise.resolve(
 	});
 }
 
+function hashCode(s) {
+
+	return s.split("").reduce((a, b) => {
+		a = ((a << 5) - a) + b.charCodeAt(0);
+		return a & a
+	}, 0);
+}
+
 exports.UserAgent = UserAgent;
 exports.isJson = isJson;
 exports.makeBcryptHash = makeBcryptHash;
@@ -374,3 +382,4 @@ exports.promiseParallelLimit = promiseParallelLimit;
 exports.getIndicesOf = getIndicesOf;
 exports.flattenObject = flattenObject;
 exports.promiseTimeout = promiseTimeout;
+exports.hashCode = hashCode;

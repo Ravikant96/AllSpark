@@ -21,6 +21,8 @@ const oracle = require('../../utils/oracle').Oracle;
 const PromiseManager = require("../../utils/promisesManager").promiseManager;
 const promiseManager = new PromiseManager("executingReports");
 const pgsql = require("../../utils/pgsql").Postgres;
+const child_process = require('child_process');
+const {performance} = require('perf_hooks');
 
 // prepare the raw data
 class report extends API {
@@ -114,6 +116,17 @@ class report extends API {
 
 		reportDetails = await Promise.all(reportDetails);
 		this.assert(reportDetails[0].length, "Report Id: " + this.reportId + " not found");
+
+		if (this.request.body.visualization_id) {
+			this.visualization = (await this.mysql.query(
+				"select options from tb_query_visualizations where visualization_id = ? and query_id = ? and is_enabled = 1 and is_deleted = 0",
+				[this.request.body.visualization_id, this.reportId]
+			))[0]
+		}
+
+		if (this.visualization && commonFun.isJson(this.visualization.options)) {
+			this.visualization.options = JSON.parse(this.visualization.options);
+		}
 
 		this.reportObj = reportDetails[0][0];
 		this.filters = reportDetails[1] || [];
@@ -614,11 +627,7 @@ class report extends API {
 				const age = Math.round((Date.now() - Date.parse(result.created_at)) / 1000);
 				result = result.data;
 
-				return {
-					data: result,
-					age: age,
-					load_saved: true,
-				};
+				this.reportObj.data = result;
 			}
 		}
 
@@ -650,7 +659,7 @@ class report extends API {
 				preparedRequest = new Oracle(this.reportObj, this.filters);
 				break;
 			case "file":
-				this.assert(false, 'No data found in the file. Please upload some data first.');
+				preparedRequest = new File(this.reportObj.data);
 				break;
 			case "bigquery_legacy":
 				preparedRequest = new BigqueryLegacy(this.reportObj, this.filters);
@@ -679,7 +688,11 @@ class report extends API {
 
 		//Priority: Redis > (Saved Result)
 
-		if (!forcedRun && this.reportObj.is_redis && redisData && !this.has_today) {
+		this.redis = (!forcedRun && parseInt(this.reportObj.is_redis) && redisData && !this.has_today);
+
+		let cacheInfo;
+
+		if (this.redis) {
 
 			try {
 
@@ -692,10 +705,12 @@ class report extends API {
 					this.user.user_id, 1, JSON.stringify({filters: this.filters}), this.user.session_id
 				);
 
-				result.cached = {
+				cacheInfo = {
 					status: true,
-					age: Date.now() - result.cached.store_time
-				};
+					age: Date.now() - result.cached && result.cached.store_time
+				}
+
+				redis.cacheInfo = cacheInfo;
 				return result;
 			}
 			catch (e) {
@@ -703,62 +718,112 @@ class report extends API {
 			}
 		}
 
-		if (promiseManager.has(engine.hash)) {
+		else {
 
-			return await promiseManager.fetchAndExecute(engine.hash);
-		}
+			cacheInfo = {status: false};
 
-		const engineExecution = engine.execute();
+			if (promiseManager.has(engine.hash)) {
 
-		const queryDetails = new Map;
-
-		queryDetails.set("query", {id: this.reportObj.query_id, name: this.reportObj.name});
-		queryDetails.set("account", {id: this.account.account_id, name: this.account.name});
-		queryDetails.set("user", {id: this.user.user_id, name: this.user.name});
-		queryDetails.set("execution_timestamp", new Date());
-		queryDetails.set("params", engine.parameters);
-
-		promiseManager.store(engineExecution, queryDetails, engine.hash);
-
-		try {
-
-			result = await engineExecution;
-			await this.storeQueryResult(result);
-
-		}
-		catch (e) {
-
-			console.error(e.stack);
-
-			if (e.message.includes("<!DOCTYPE")) {
-
-				e.message = e.message.slice(0, e.message.indexOf("<!DOCTYPE")).trim();
+				return await promiseManager.fetchAndExecute(engine.hash);
 			}
 
-			throw new API.Exception(400, e.message);
+			const engineExecution = engine.execute();
+
+			const queryDetails = new Map;
+
+			queryDetails.set("query", {id: this.reportObj.query_id, name: this.reportObj.name});
+			queryDetails.set("account", {id: this.account.account_id, name: this.account.name});
+			queryDetails.set("user", {id: this.user.user_id, name: this.user.name});
+			queryDetails.set("execution_timestamp", new Date());
+			queryDetails.set("params", engine.parameters);
+
+			promiseManager.store(engineExecution, queryDetails, engine.hash);
+
+
+			try {
+
+				result = await engineExecution;
+
+			}
+			catch (e) {
+
+				console.error(e.stack);
+
+				if (e.message.includes("<!DOCTYPE")) {
+
+					e.message = e.message.slice(0, e.message.indexOf("<!DOCTYPE")).trim();
+				}
+
+				throw new API.Exception(400, e.message);
+			}
+
+			finally {
+
+				promiseManager.remove(engine.hash);
+			}
+
+
+			await engine.log(this.reportObj.query_id, result.query, result.runtime,
+				this.reportObj.type, this.user.user_id, 0, JSON.stringify({filters: this.filters}), this.user.session_id
+			);
+
+			const EOD = new Date();
+			EOD.setHours(23, 59, 59, 999);
 		}
 
-		finally {
+		const transformationData = [];
 
-			promiseManager.remove(engine.hash);
+		let columnInfo = JSON.parse(this.reportObj.format);
+
+		columnInfo = columnInfo.columns ? columnInfo.columns : [];
+
+		if (!Array.isArray(columnInfo)) {
+
+			columnInfo = [columnInfo];
 		}
+		//todo figure out a way to log server transformations
 
 		engine.log(this.reportObj.query_id, result.query, result.runtime,
 			this.reportObj.type, this.user.user_id, 0, JSON.stringify({filters: this.filters}), this.user.session_id
 		);
 
-		const EOD = new Date();
-		EOD.setHours(23, 59, 59, 999);
+		for (const transformation of !(this.visualization && this.visualization.options) ? [] : this.visualization.options.transformations) {
 
-		result.cached = {store_time: Date.now()};
+			if (transformation.backend_transformation && transformations.has(transformation.type)) {
 
-		if (redis && this.reportObj.is_redis) {
+				const st = performance.now();
+				let metadata = {};
+
+				const transformationObj = new (transformations.get(transformation.type))(
+					transformation.columns, result.data, columnInfo
+				);
+				const response = (await transformationObj.execute()).body;
+
+				this.assert(response.status, response.response);
+
+				[result.data, metadata] = Transformation.merge(result.data, response, transformation.columns);
+
+				transformationData.push({
+					name: transformation.type,
+					time_taken: performance.now() - st,
+					...metadata
+				});
+			}
+		}
+
+		result.metadata = {
+			transformations: transformationData,
+		};
+
+		cacheInfo.store_time = Date.now();
+
+		if (redis && this.reportObj.is_redis && !this.redis) {
 
 			await redis.set(hash, JSON.stringify(result));
 			await redis.expire(hash, this.reportObj.is_redis);
 		}
 
-		result.cached = {status: false};
+		result.cached = cacheInfo;
 
 		return result;
 	}
@@ -1452,12 +1517,30 @@ class Oracle {
 	}
 }
 
+class File {
+
+	constructor(data) {
+
+		this.data = data;
+	}
+
+	get finalQuery() {
+
+		return {
+			type: "file",
+			request: [this.data],
+		};
+	}
+}
+
 
 class ReportEngine extends API {
 
 	constructor(parameters) {
 
 		super();
+
+		const fn = (data) => data;
 
 		ReportEngine.engines = {
 			mysql: this.mysql.query,
@@ -1467,6 +1550,7 @@ class ReportEngine extends API {
 			mssql: this.mssql.query,
 			mongo: mongoConnecter,
 			oracle: oracle.query,
+			file: fn,
 		};
 
 		this.parameters = parameters || {};
@@ -1517,6 +1601,10 @@ class ReportEngine extends API {
 		else if (this.parameters.type === "mongo") {
 
 			query = JSON.stringify(this.parameters.request[0], 0, 1);
+		}
+		else if (this.parameters.type == "file") {
+
+			query = null;
 		}
 
 		return {
@@ -1775,6 +1863,145 @@ class CachedReports extends API {
 	}
 }
 
+
+class Transformation {
+
+	constructor(options, data, columnInfo) {
+		this.options = options;
+		this.data = data;
+		this.columnInfo = columnInfo;
+	}
+
+	//originalData = result.data from query engine
+	//metadata = result from transformations
+
+	static merge(originalData, response, columnInfo) {
+
+		let
+			metadata = response.response.rows,
+			connectingColumn = response.response.connecting_column || "timing",
+			mergeColumn = [],
+			deleteColumn = []
+		;
+
+		if (!metadata) {
+
+			return [originalData, {}];
+		}
+
+		const newColumns = {};
+
+		for (const column in metadata[0]) {
+
+			if (column == connectingColumn) {
+
+				continue;
+			}
+
+			for (const newColumn in metadata[0][column]) {
+
+				const hashedName = `${column}_${newColumn}_${commonFun.hashCode(column + newColumn)}`
+
+				newColumns[`${column}_${newColumn}`] = hashedName;
+
+				if (columnInfo.mergeExtrapolation && newColumn == "forecast") {
+
+					mergeColumn.push([column, hashedName]);
+				}
+
+				if (columnInfo.hideUpperLimit && newColumn == "upper") {
+
+					deleteColumn.push(hashedName);
+				}
+
+				if (columnInfo.hideLowerLimit && newColumn == "lower") {
+
+					deleteColumn.push(hashedName);
+				}
+			}
+		}
+
+		const originalDataMapping = {};
+
+		for (const row of originalData) {
+
+			originalDataMapping[row[connectingColumn].replace('T', ' ').slice(0, 19)] = row;
+		}
+
+		const dashedArray = [];
+
+		for (const row of metadata) {
+
+			if (!originalDataMapping.hasOwnProperty(row[connectingColumn])) {
+
+				dashedArray.push(row[connectingColumn]);
+				originalDataMapping[row[connectingColumn]] = {};
+			}
+
+			for (const originalColumn in row) {
+
+				const connectingCol = row[connectingColumn].replace('T', ' ').slice(0, 19);
+
+				if (originalColumn == connectingColumn) {
+
+					originalDataMapping[connectingCol][originalColumn] = connectingCol;
+					continue;
+				}
+
+				for (const newColumn in row[originalColumn]) {
+
+					originalDataMapping[connectingCol][newColumns[`${originalColumn}_${newColumn}`]] = parseFloat(row[originalColumn][newColumn]);
+				}
+			}
+		}
+
+		const result = Object.values(originalDataMapping);
+
+		if (columnInfo.mergeExtrapolation && mergeColumn) {
+
+			for (const row of result) {
+
+				for (const columnPair of mergeColumn) {
+
+					if (!row.hasOwnProperty(columnPair[0])) {
+
+						row[columnPair[0]] = row[columnPair[1]];
+					}
+
+					delete row[columnPair[1]];
+				}
+
+				for(const column of deleteColumn) {
+
+					delete row[column];
+				}
+			}
+		}
+
+		return [result, {dashedArray, newColumns}];
+	}
+}
+
+const transformations = new Map;
+
+transformations.set('forecast', class Forecast extends Transformation {
+
+	constructor(options, data, columnsInfo) {
+
+		super(options, data, columnsInfo);
+	}
+
+	async execute() {
+
+		const obj = {
+			options: this.options,
+			data: this.data,
+			column_info: this.columnInfo
+		};
+
+		return await download.jsonRequest(obj, config.get("allspark_python_base_api") + "forecast/get");
+	}
+});
 
 exports.query = query;
 exports.report = report;
