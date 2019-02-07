@@ -403,7 +403,7 @@ main.preview-left #stages {
 			flex: 1 60%;
 			box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
 			height: 100%;
-			grid-template-rows: max-content max-content max-content max-content max-content max-content;
+			grid-template-rows: repeat(7, max-content);
 		}
 		#stage-define-report #define-report-form.api {
 			overflow: auto;
@@ -456,6 +456,7 @@ main.preview-left #stages {
 					#stage-define-report #define-report-form .add-parameter-form button.add,
 					#stage-define-report #define-report-form .add-headers-form button.add {
 						background: var(--color-secondary);
+						color: var(--color-secondary-text);
 					}
 					#stage-define-report #define-report-form .add-parameter-form label span,
 					#stage-define-report #define-report-form .add-headers-form label span {
