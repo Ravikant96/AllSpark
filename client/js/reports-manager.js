@@ -3937,6 +3937,11 @@ ReportConnection.types.set('api', class ReportConnectionAPI extends ReportConnec
 					</label>
 				</div>
 			</label>
+
+			<label>
+				<span>Result Selector</span>
+				<input name="selector">
+			</label>
 		`;
 
 		// Set the values from report definition
@@ -4117,6 +4122,7 @@ ReportConnection.types.set('api', class ReportConnectionAPI extends ReportConnec
 			method: this.form.method.value,
 			parameters,
 			headers,
+			selector: this.form.selector.value,
 		};
 	}
 });
@@ -5493,7 +5499,7 @@ SpatialMapOptionsLayer.types.set('heatmap', class HeatMapLayer extends SpatialMa
 				<span>Opacity <span class="value">${this.opacity || 0.6}</span></span>
 				<input type="range" name="opacity" min="0" max="1" step="0.01">
 			</label>
-			
+
 			<label>
 				<span>Gradient</span>
 				<div class="gradients"></div>
