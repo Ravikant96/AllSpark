@@ -4107,6 +4107,16 @@ class ForkData {
 			dialogBox = this.forkDialogBox = new DialogBox();
 			dialogBox.body.classList.add('fork-report');
 		}
+
+		this.fetch();
+	}
+
+	async fetch() {
+
+		[this.connections] = await Promise.all([
+			API.call('credentials/list'),
+			DataSource.load(true),
+		]);
 	}
 
 	get container() {
@@ -4129,6 +4139,18 @@ class ForkData {
 				<h2>Drop File Here</h2>
 				<span>Or click to upload&hellip;</span>
 				<div class="message hidden"></div>
+			</div>
+
+			<div class="connections hidden">
+				<label>Connections</label>
+				<table class="connections-list">
+					<thead>
+						<th>SNo.</th>
+						<th>Old Connection Name</th>
+						<th>New Connection Name</th>
+					</thead>
+					<tbody></tbody>
+				</table>
 			</div>
 
 			<label class="switch-to-new">
@@ -4356,10 +4378,22 @@ class ForkData {
 				container.querySelector('.forking-options').insertAdjacentHTML('beforeend',
 					`
 						<label>
-							<span>${option.title}</span>
+							<span name="${key}">${option.title}</span>
 						</label>
 					`
 				);
+
+				if(key == 'parent') {
+
+					container.querySelector('.forking-options span[name="parent"]').insertAdjacentHTML('beforeend',
+						`
+							<span class="NA" data-tooltip-position="right" data-tooltip="Parent is not valid in Import/Export.">
+								<i class="fas fa-question"></i>
+							</span>
+						`
+					);
+				}
+
 				container.querySelector('.forking-options').appendChild(option.multiSelect.container);
 			}
 		}
@@ -4391,9 +4425,43 @@ class ForkData {
 
 			this.createForkedData();
 
+			this.container.querySelector('.connections').classList.toggle('hidden', !this.uploadedFile);
+
+			const connectionsBody= this.container.querySelector('table.connections-list tbody');
+
+			let index = 1;
+
+			connectionsBody.textContent = null;
+
+			for(const reportConnection of this.reportConnections.values()) {
+
+				const row = document.createElement('tr');
+
+				row.innerHTML = `
+					<td>${index}</td>
+					<td><span>${reportConnection}</span></td>
+					<td><select name="connection_name" data-oldConnection="${reportConnection}"></select></td>
+				`;
+
+				const selectConnection = row.querySelector('td select');
+
+				for(const connection of this.connections) {
+
+					selectConnection.insertAdjacentHTML('beforeend',
+						`<option value="${connection.id}">${connection.connection_name}</option>`
+					)
+				}
+
+				connectionsBody.appendChild(row);
+
+				index++;
+			}
+
 			this.container.querySelector('.dragDrop-and-upload input').value = '';
 
-			this.message('Upload Complete', 'notice');
+			const title = JSON.parse(this.uploadedFile).title;
+
+			this.message(`${title} Upload Complete`, 'notice');
 		}
 	}
 
@@ -5180,16 +5248,6 @@ class ForkCompleteDashboard extends ForkData {
 		super(name, forkedData, type);
 
 		this.dashboard = currentDashboard || {};
-
-		this.fetch();
-	}
-
-	async fetch() {
-
-		[this.connections] = await Promise.all([
-			API.call('credentials/list'),
-			DataSource.load(true),
-		]);
 	}
 
 	get json() {
@@ -5571,6 +5629,7 @@ class ImportDashboard extends ForkData {
 
 		const
 			visualizations = new Set(),
+			connections = new Set(),
 			forkedData = new Map();
 
 		for(const visualization of uploadedFile.visualizations || []) {
@@ -5582,16 +5641,43 @@ class ImportDashboard extends ForkData {
 			});
 		}
 
+		for(const report in uploadedFile.reports) {
+			connections.add(uploadedFile.reports[report].connectionName);
+		}
+
 		forkedData.set('dashboardHeading', {title: `New Dashboard's Name`, value: uploadedFile.title, type: 'input', selected: [], required: true});
 		forkedData.set('prefix', {title: `Report's Prefix`, value: uploadedFile.prefix, type: 'input', selected: [], required: false});
 		forkedData.set('visualizations', {title: 'Visualizations', value: visualizations, type: 'multiselect'});
 
 		this.forkedData = forkedData;
 		this.type = 'Dashboard';
+		this.reportConnections = connections;
 		this.name = uploadedFile.title;
 	}
 
 	fork() {
+
+		if(!this.uploadedFile) {
+			return;
+		}
+
+		const
+			selectedConnections = this.container.querySelectorAll('.connections table select'),
+			uploadedFile = JSON.parse(this.uploadedFile);
+
+		for(const report in uploadedFile.reports) {
+
+			for(const selectedConnection of selectedConnections) {
+
+				const oldConnection = this.container.querySelectorAll('.connections table select')[0].dataset.oldconnection;
+
+				if(uploadedFile.reports[report].connectionName == oldConnection) {
+					uploadedFile.reports[report].connection_name = parseInt(selectedConnection.value);
+				}
+			}
+		}
+
+		this.uploadedFile = JSON.stringify(uploadedFile);
 
 		this.forkCompleteDashboard.importedFile = this.uploadedFile;
 		this.forkCompleteDashboard.forkDialogBox = this.forkDialogBox;

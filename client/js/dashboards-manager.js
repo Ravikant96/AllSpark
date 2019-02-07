@@ -91,7 +91,6 @@ class DashboardManager extends Page {
 		const heading = this.container.querySelector('.section .heading');
 
 		heading.insertAdjacentHTML('beforeend', `
-			<input type="file" accept=".json" class="hidden import-input">
 			<button id="import-dashboard">
 				<i class="fas fa-code-branch"></i>
 				Import Dashboard
@@ -108,56 +107,10 @@ class DashboardManager extends Page {
 
 		this.importNewDashboard = new ImportDashboard();
 
-		const
-			importInput = heading.querySelector('.import-input'),
-			importDashboard = heading.querySelector('#import-dashboard');
-
-		// importInput.on('change', e => {
-
-		// 	if(e.target.files.length) {
-		// 		this.upload(e.target.files[0]);
-		// 	}
-		// });
-
-		// importDashboard.on('click', () => importInput.click());
-		importDashboard.on('click', () => {
+		heading.querySelector('#import-dashboard').on('click', () => {
 			this.importNewDashboard.forkDialogBox.body.appendChild(this.importNewDashboard.container);
 		});
 	}
-
-	// upload(file) {
-
-	// 	if(file.type != 'application/json') {
-
-	// 		return new SnackBar({
-	// 			message: 'Please upload JSON file',
-	// 			type: 'error',
-	// 		});
-	// 	}
-
-	// 	const fileReader = new FileReader();
-
-	// 	fileReader.readAsText(file);
-
-	// 	fileReader.onload = async e => {
-
-	// 		if(!e.target.result.trim()) {
-
-	// 			return new SnackBar({
-	// 				message: 'Uploaded file is empty',
-	// 				type: 'warning',
-	// 			});
-	// 		}
-
-	// 		this.importNewDashboard.uploadedFile = fileReader.result;
-
-	// 		this.importNewDashboard.createForkedData();
-
-	// 		this.importNewDashboard.forkDialogBox.body.appendChild(this.importNewDashboard.container);
-
-	// 		this.container.querySelector('.section .heading .import-input').value = '';
-	// 	}
-	// }
 
 	process() {
 

@@ -1581,6 +1581,12 @@ body#tinymce table tr {
 		.dialog-box .fork-report .form .dragDrop-and-upload .notice {
 			color: var(--color-green);
 		}
+	.dialog-box .fork-report .form .connections label {
+		padding-bottom: calc(var(--gap) * 2);
+	}
+	.dialog-box .fork-report .form .connections table tr {
+		text-align: center;
+	}
 	.dialog-box .fork-report .form .footer {
 		display: grid;
 		grid-template-columns: 1fr max-content max-content;
