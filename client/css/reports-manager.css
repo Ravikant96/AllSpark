@@ -579,6 +579,9 @@ main.preview-left #stages {
 				#stage-define-report #filters .form .label {
 					grid-row: span 2;
 				}
+				#stage-define-report #filters .form .dataset .multi-select .options {
+					z-index: 0;
+				}
 			#stage-define-report #filters #external-parameters,
 			#stage-define-report #filters #suggested-filters {
 				margin-top: 40px;
@@ -770,6 +773,10 @@ main.preview-left #stages {
 			background: transparent;
 			padding: 0;
 		}
+		.visualization-form .axes .multi-select .options,
+		.visualization-form .transformations .multi-select .options {
+			z-index: 1;
+		}
 			.visualization-form .axes .form .advanced-toggle {
 				font-size: 90%;
 				text-align: center;
@@ -868,20 +875,18 @@ main.preview-left #stages {
 				.visualization-form .transformations fieldset > .actions > div:active {
 					box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25);
 				}
-			.visualization-form .transformations .title {
-				grid-template-columns: max-content;
-			}
 			.visualization-form .transformations .transformation {
 				display: grid;
 				grid-gap: calc(var(--gap) * 2);
 				align-items: flex-start;
 				margin-top: calc(var(--gap) * 2);
+				grid-template-columns: 200px;
 			}
 				.visualization-form .transformations .transformation > div {
 					display: grid;
 					grid-template-columns: 1fr;
 					grid-gap: calc(var(--gap) * 2);
-					width: max-content;
+					width: 200px;
 				}
 					.visualization-form .transformations .transformation h4 {
 						margin: 0;
@@ -945,7 +950,8 @@ main.preview-left #stages {
 			padding-top: 15px;
 		}
 
-	#stage-configure-visualization .dashboards .list {
+	#stage-configure-visualization .dashboards .body > .list,
+	.visualization-form .related-visualizations .body > .list {
 		grid-gap: calc(var(--gap) * 2);
 		display: grid;
 	}
@@ -967,8 +973,10 @@ main.preview-left #stages {
 				#stage-configure-visualization .dashboards .view-dashboard > i {
 					margin: 0;
 				}
-			#stage-configure-visualization .dashboards .dashboard_id {
-				width: 200px;
+			#stage-configure-visualization .dashboards .dashboard_id,
+			.visualization-form .related-visualizations .form .visualization {
+				width: 250px;
+				max-width: 250px;
 			}
 			#stage-configure-visualization .dashboards input[type=number] {
 				width: 75px;
@@ -999,11 +1007,6 @@ main.preview-left #stages {
 			.visualization-form .filters .delete > i {
 				margin: 0;
 			}
-
-	.visualization-form .related-visualizations .list {
-		grid-gap: calc(var(--gap) * 2);
-		display: grid;
-	}
 		.visualization-form .related-visualizations .form {
 			grid-template-columns: repeat(6, max-content);
 			grid-gap: calc(var(--gap) * 2);
@@ -1019,9 +1022,6 @@ main.preview-left #stages {
 		}
 			.visualization-form .related-visualizations .form label input.item {
 				width: 70px;
-			}
-			.visualization-form .related-visualizations .form .visualization {
-				width: 200px;
 			}
 
 	.visualization-form .configuration-section h3 .count {

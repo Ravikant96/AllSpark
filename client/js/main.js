@@ -2528,24 +2528,7 @@ class MultiSelect {
 
 			e.stopPropagation();
 
-			if(!this.optionsContainer) {
-
-				container.appendChild(this.options);
-				this.render();
-			}
-
-			if(!container.classList.contains('stretched')) {
-
-				for(const option of document.querySelectorAll('.multi-select .options')) {
-
-					if(!option.parentElement.classList.contains('stretched')) {
-
-						option.classList.add('hidden');
-					}
-				}
-			}
-
-			this.options.classList.remove('hidden');
+			this.showHideOptions();
 			this.container.querySelector('input[type=search]').placeholder = 'Search...';
 		});
 
@@ -2561,13 +2544,7 @@ class MultiSelect {
 
 		search.on('keyup', e => {
 
-			if(!this.optionsContainer) {
-
-				container.appendChild(this.options);
-				this.render();
-			}
-
-			this.options.classList.remove('hidden');
+			this.showHideOptions();
 
 			if(e.which == 13 || e.key_code == 13) {
 
@@ -2592,6 +2569,28 @@ class MultiSelect {
 		});
 
 		return container;
+	}
+
+	showHideOptions() {
+
+		if(!this.optionsContainer) {
+
+			this.container.appendChild(this.options);
+			this.render();
+		}
+
+		if(!this.container.classList.contains('stretched')) {
+
+			for(const option of document.querySelectorAll('.multi-select .options')) {
+
+				if(!option.parentElement.classList.contains('stretched')) {
+
+					option.classList.add('hidden');
+				}
+			}
+		}
+
+		this.options.classList.remove('hidden');
 	}
 
 	get datalist() {
@@ -2777,17 +2776,17 @@ class MultiSelect {
 
 		options.innerHTML = `
 			<header>
-					<a class="all">All</a>
-					<a class="clear">Clear</a>
-					<a class="mode">${this.mode == 'stretch' ? 'Stretch' : 'Collapse'}</a>
-				</header>
-				<div class="list"></div>
-				<div class="no-matches NA hidden">No data found</div>
-				<footer class="hidden"></footer>
+				<a class="all">All</a>
+				<a class="clear">Clear</a>
+				<a class="mode">${this.mode == 'stretch' ? 'Stretch' : 'Collapse'}</a>
 				<div class="modes-drop-down hidden">
 					<span class="dual">${this.mode == 'stretch' ? 'Collapse' : 'Stretch'}</span>
 					<span class="expand">Expand</span>
 				</div>
+			</header>
+			<div class="list"></div>
+			<div class="no-matches NA hidden">No data found</div>
+			<footer class="hidden"></footer>
 		`;
 
 		options.on('click', e => e.stopPropagation());
