@@ -978,9 +978,12 @@ class APIRequest {
 
 		const headers = {};
 
-		for (const header of this.definition.headers || []) {
+		if(Array.isArray(this.definition.headers)) {
 
-			headers[header.key] = header.value;
+			for (const header of this.definition.headers || []) {
+
+				headers[header.key] = header.value;
+			}
 		}
 
 		this.definition.headers = headers;
@@ -1508,7 +1511,27 @@ class ReportEngine extends API {
 
 			data = await data.json();
 
-			if (data && Array.isArray(data.data)) {
+			if (this.parameters.request && this.parameters.request[1] && this.parameters.request[1].hasOwnProperty("selector")
+				&& this.parameters.request[1].selector.length
+			) {
+
+				const sandbox = {x: 1, data};
+
+				vm.createContext(sandbox);
+
+				try {
+
+					const code = `x = (${JSON.stringify(data)})${this.parameters.request[1].selector}`;
+					vm.runInContext(code, sandbox);
+					data = sandbox.x;
+				}
+
+				catch (e) {
+					console.log(e)
+				}
+			}
+
+			else if (data && Array.isArray(data.data)) {
 
 				data = data.data;
 			}
