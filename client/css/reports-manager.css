@@ -456,6 +456,7 @@ main.preview-left #stages {
 					#stage-define-report #define-report-form .add-parameter-form button.add,
 					#stage-define-report #define-report-form .add-headers-form button.add {
 						background: var(--color-secondary);
+						color: var(--color-secondary-text);
 					}
 					#stage-define-report #define-report-form .add-parameter-form label span,
 					#stage-define-report #define-report-form .add-headers-form label span {
