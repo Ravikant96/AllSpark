@@ -1511,26 +1511,29 @@ class ReportEngine extends API {
 
 			data = await data.json();
 
-			if (data && Array.isArray(data.data)) {
-
-				data = data.data;
-			}
-
-			if (this.parameters.hasOwnProperty("selector")) {
+			if (this.parameters.request && this.parameters.request[1] && this.parameters.request[1].hasOwnProperty("selector")
+				&& this.parameters.request[1].selector.length
+			) {
 
 				const sandbox = {x: 1, data};
 
 				vm.createContext(sandbox);
 
-				const code = `x = ${data}${this.parameters.selector}`;
-
 				try {
 
-					vm.runInContext(code, this.sandbox);
-					data = sandbox.x
+					const code = `x = (${JSON.stringify(data)})${this.parameters.request[1].selector}`;
+					vm.runInContext(code, sandbox);
+					data = sandbox.x;
 				}
 
-				catch (e) {}
+				catch (e) {
+					console.log(e)
+				}
+			}
+
+			else if (data && Array.isArray(data.data)) {
+
+				data = data.data;
 			}
 		}
 
