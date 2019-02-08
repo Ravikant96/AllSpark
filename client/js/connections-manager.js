@@ -200,7 +200,7 @@ class Connections extends Page {
 			}
 
 			for(const data of value) {
-				if(data.connection_name.toLowerCase().includes(string)) {
+				if(data.name.toLowerCase().includes(string)) {
 					result.set(key, value);
 				}
 			}
@@ -341,7 +341,7 @@ class DataConnections extends Set {
 
 			new SnackBar({
 				message: `${this.type} Connection Added`,
-				subtitle: `${selectedConnection.connection_name} #${selectedConnection.id}`,
+				subtitle: `${selectedConnection.name} #${selectedConnection.id}`,
 				icon: 'fas fa-plus',
 			});
 
@@ -382,7 +382,7 @@ class DataConnection {
 		container.classList.add('connection');
 
 		container.innerHTML = `
-			<span>${this.connection_name} <span class="NA">#${this.id}</span> </span>
+			<span>${this.name} <span class="NA">#${this.id}</span> </span>
 			<span title="${!this.editable ? 'Not enough privileges' : 'Edit'}" class="action ${!this.editable ? 'grey' : 'green'}"><i class="far fa-edit"></i></span>
 			<span title="${!this.deletable ? 'Not enough privileges' : 'Delete'}" class="action ${!this.deletable ? 'grey' : 'red'}"><i class="far fa-trash-alt"></i></span>
 		`;
@@ -405,7 +405,7 @@ class DataConnection {
 
 	async edit() {
 
-		this.container.querySelector('h1').textContent = 'Editing ' + this.connection_name;
+		this.container.querySelector('h1').textContent = 'Editing ' + this.name;
 
 		if(DataConnection.eventListener) {
 			this.form.removeEventListener('submit', DataConnection.eventListener);
@@ -506,7 +506,7 @@ class DataConnection {
 
 			new SnackBar({
 				message: `${this.type} Connection Saved`,
-				subtitle: `${this.connection_name} #${this.id} (${this.type})`,
+				subtitle: `${this.name} #${this.id} (${this.type})`,
 				icon: 'far fa-save',
 			});
 
@@ -550,7 +550,7 @@ class DataConnection {
 
 			new SnackBar({
 				message: `${this.type} Connection Removed`,
-				subtitle: `${this.connection_name} #${this.id}`,
+				subtitle: `${this.name} #${this.id}`,
 				icon: 'far fa-trash-alt',
 			});
 

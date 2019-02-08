@@ -30,7 +30,7 @@ class Oracle {
 					credential: {
 						user: credential.user,
 						password: credential.password,
-						connectString: `(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = ${credential.host})(PORT = ${credential.port || 1521}))(CONNECT_DATA =(SID= ${credential.connection_name})))`,
+						connectString: `(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = ${credential.host})(PORT = ${credential.port || 1521}))(CONNECT_DATA =(SID= ${credential.name})))`,
 					}
 				};
 

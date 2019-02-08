@@ -82,7 +82,7 @@ class VisualizationsManagerList extends Map {
 				key: 'Connection Name',
 				rowValue: row => {
 					if(page.connections.has(parseInt(row.connection_name)))
-						return [page.connections.get(parseInt(row.connection_name)).connection_name];
+						return [page.connections.get(parseInt(row.connection_name)).name];
 					else
 						return [];
 				},

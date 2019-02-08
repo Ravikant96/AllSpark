@@ -1255,7 +1255,7 @@ router.get('/connections-manager/:id?/:type?', API.serve(class extends HTMLAPI {
 
 					<label>
 						<span>Name <span class="red">*</span></span>
-						<input type="text" name="connection_name" required>
+						<input type="text" name="name" required>
 					</label>
 
 					<div id="details"></div>

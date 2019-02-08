@@ -15,23 +15,23 @@ const syncServer = require("../utils/sync-server");
 
 exports.insert = class extends API {
 
-	async insert({connection_name, host = null, port = null, user = null, password, db = null, limit = 10, type, file = null, project_name = null} = {}) {
+	async insert({name, host = null, port = null, user = null, password, db = null, limit = 10, type, file = null, project_name = null} = {}) {
 
 		this.user.privilege.needs('connection.insert', 'ignore');
 
-		this.assert(connection_name && type, 'Connection name and type required');
+		this.assert(name && type, 'Connection name and type required');
 
 		const response = await this.mysql.query(
 			`INSERT INTO
 				tb_credentials (
-					account_id, connection_name, host, port, user, password,
+					account_id, name, host, port, user, password,
 					db,	\`limit\`, \`type\`, file, project_name, added_by
 				)
 				VALUES (?)
 			`,
 			[[
 				this.account.account_id,
-				connection_name,
+				name,
 				host,
 				port || null,
 				user,
@@ -244,7 +244,7 @@ exports.delete = class extends API {
 
 exports.update = class extends API {
 
-	async update({id, connection_name, user = null, password = null, host = null, port = null, db = null, project_name = null, file = null} = {}) {
+	async update({id, name, user = null, password = null, host = null, port = null, db = null, project_name = null, file = null} = {}) {
 
 		const [connectionObj] = await this.mysql.query(`
 				SELECT
@@ -277,9 +277,9 @@ exports.update = class extends API {
 		this.assert(!authResponse.error, authResponse.message);
 
 		const
-			values = {connection_name, host, port: parseInt(port) || null, user, password, db, project_name, file},
+			values = {name, host, port: parseInt(port) || null, user, password, db, project_name, file},
 			compareJson = {
-				connection_name: connectionObj.connection_name,
+				name: connectionObj.name,
 				host: connectionObj.host,
 				port: connectionObj.port,
 				user: connectionObj.user,

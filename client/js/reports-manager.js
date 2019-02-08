@@ -85,7 +85,7 @@ class ReportsManger extends Page {
 				key: 'Connection name',
 				rowValue: row => {
 					if(page.connections.has(parseInt(row.connection_name)))
-						return [page.connections.get(parseInt(row.connection_name)).connection_name];
+						return [page.connections.get(parseInt(row.connection_name)).name];
 					else
 						return [];
 				},
@@ -729,7 +729,7 @@ ReportsManger.stages.set('pick-report', class PickReport extends ReportsMangerSt
 						${report.name}
 					</a>
 				</td>
-				<td>${connection.connection_name} (${connection.feature.name})</td>
+				<td>${connection.name} (${connection.feature.name})</td>
 				<td class="tags"></td>
 				<td title="${report.filters.map(f => f.name).join(', ')}" >
 					${report.filters.length}
@@ -848,8 +848,8 @@ ReportsManger.stages.set('pick-report', class PickReport extends ReportsMangerSt
 			reports = reports.sort((a, b) => {
 
 				if(this.sort.column == 'connection') {
-					a = this.page.connections.get(parseInt(a.connection_name)).connection_name;
-					b = this.page.connections.get(parseInt(b.connection_name)).connection_name;
+					a = this.page.connections.get(parseInt(a.connection_name)).name;
+					b = this.page.connections.get(parseInt(b.connection_name)).name;
 				}
 
 				else {
@@ -979,7 +979,7 @@ ReportsManger.stages.set('configure-report', class ConfigureReport extends Repor
 
 			for(const connection of this.page.connections.values()) {
 				this.form.connection_name.insertAdjacentHTML('beforeend',
-					`<option value="${connection.id}">${connection.connection_name} (${connection.feature.name})</option>`
+					`<option value="${connection.id}">${connection.name} (${connection.feature.name})</option>`
 				)
 			}
 		}
