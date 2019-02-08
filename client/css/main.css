@@ -864,7 +864,7 @@ body {
 			background: var(--color-background);
 			box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 			right: 0;
-			top: 0;
+			top: 1px;
 			margin-right: var(--gap);
 			color: var(--color-background-text);
 		}
