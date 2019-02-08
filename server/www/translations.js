@@ -174,6 +174,16 @@ class Translations extends API {
 
 	async list({owner = '0', owner_id = '0', phrase = "", locale_id = '0'}) {
 
+		if(!Array.isArray(owner)) {
+
+			owner = [owner];
+		}
+
+		if(!Array.isArray(owner_id)) {
+
+			owner_id = [owner_id];
+		}
+
 		return await this.mysql.query(`
 			SELECT
 				o.*, 
@@ -185,8 +195,8 @@ class Translations extends API {
 			ON
 				l.id = o.locale_id
 			WHERE
-				(owner = ? OR '0' = ?)
-				AND (owner_id = ? OR '0' = ?)
+				(owner in (?) OR '0' in (?))
+				AND (owner_id in (?) OR '0' in (?))
 				AND (phrase = ? OR "" = ?)
 				AND (locale_id = ? OR '0' = ?)
 				AND account_id = ?

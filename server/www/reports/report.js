@@ -472,6 +472,8 @@ exports.list = class extends API {
 
 		//phrase should be like title, description etc, which will be replaced with user's locale.
 
+		const uniqueTranslationColumns = ["name", "description"];
+
 		for(const row of results[7]) {
 
 			if(!queryTranslationMapping.hasOwnProperty(row.owner_id)) {
@@ -479,7 +481,9 @@ exports.list = class extends API {
 				queryTranslationMapping[row.owner_id] = {};
 			}
 
-			queryTranslationMapping[row.owner_id][row.phrase] = row.translation;
+			Array.isArray(queryTranslationMapping[row.owner_id][row.phrase])
+				? queryTranslationMapping[row.owner_id][row.phrase].push(row.translation)
+				: queryTranslationMapping[row.owner_id][row.phrase] = [row.translation]
 		}
 
 		const response = new Map;
@@ -495,7 +499,18 @@ exports.list = class extends API {
 
 		for (let row of results[0]) {
 
-			//row = {...row, ...queryTranslationMapping[row.query_id]};
+			if(queryTranslationMapping[row.query_id]) {
+
+				for(const column of uniqueTranslationColumns) {
+
+					if (queryTranslationMapping[row.query_id].hasOwnProperty(column)) {
+
+						queryTranslationMapping[row.query_id][column] = queryTranslationMapping[row.query_id][column][0];
+					}
+				}
+			}
+
+			row = {...row, translations: queryTranslationMapping[row.query_id]};
 
 			row.roles = (reportRoleMapping[row.query_id] || {}).roles || [];
 			row.category_id = (reportRoleMapping[row.query_id] || {}).category_id || [];
