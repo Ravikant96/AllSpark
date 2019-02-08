@@ -809,11 +809,13 @@ body {
 				max-width: inherit;
 				overflow: hidden;
 				white-space: initial;
-				box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
 				transition: background var(--transition-duration),
 							box-shadow var(--transition-duration);
 				background: var(--color-surface);
 				color: var(--color-surface-text);
+			}
+			.multi-select-expanded > .list label {
+				box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
 			}
 			.multi-select .options .list label:hover,
 			.multi-select-expanded > .list label:hover {
