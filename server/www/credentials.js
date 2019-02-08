@@ -66,7 +66,7 @@ exports.insert = class extends API {
 			}
 		);
 
-		await syncServer.set(`${constants.lastUpdatedKeys.connection}.${this.request.body.type.toLowerCase()}`);
+		await syncServer.set(`${constants.lastUpdatedKeys.connection}.${type.toLowerCase()}`);
 
 		return response;
 	}
@@ -74,17 +74,31 @@ exports.insert = class extends API {
 
 exports.list = class extends API {
 
-	async list() {
+	async list({search, text} = {}) {
 
 		this.user.privilege.needs('connection.list', 'ignore');
+
+		let
+			query = 'SELECT * FROM tb_credentials WHERE account_id = ? AND status = 1',
+			parameters = [this.account.account_id]
+		;
+
+		if (search) {
+			query = query.concat(`
+				AND (
+					type LIKE ?
+					OR connection_name LIKE ?
+				)
+				LIMIT 10
+			`);
+
+			parameters.push(`%${text}%`, `%${text}%`);
+		}
 
 		const
 			response = [],
 			[connections, object_roles] = await Promise.all([
-				this.mysql.query(
-					'SELECT * FROM tb_credentials WHERE account_id = ? AND status = 1',
-					[this.account.account_id]
-				),
+				this.mysql.query(query, parameters),
 				this.mysql.query(
 					`SELECT * FROM tb_object_roles WHERE account_id = ? && owner = 'connection'`,
 					[this.account.account_id]
@@ -160,6 +174,8 @@ exports.list = class extends API {
 
 			connection.editable = connection.editable || connection.added_by == this.user.user_id || this.user.privilege.has('superadmin');
 			connection.deletable = connection.deletable || connection.added_by == this.user.user_id || this.user.privilege.has('superadmin');
+			connection.superset = 'Reports';
+			connection.href = `/connections-manager/${connection.id}`;
 		}
 
 		for(const data of response) {
