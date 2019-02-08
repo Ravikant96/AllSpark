@@ -510,7 +510,7 @@ exports.list = class extends API {
 				}
 			}
 
-			row = {...row, translations: queryTranslationMapping[row.query_id]};
+			row.translations = queryTranslationMapping[row.query_id] || {};
 
 			row.roles = (reportRoleMapping[row.query_id] || {}).roles || [];
 			row.category_id = (reportRoleMapping[row.query_id] || {}).category_id || [];
