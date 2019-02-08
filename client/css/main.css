@@ -1536,7 +1536,7 @@ body#tinymce table tr {
 		grid-gap: calc(var(--gap) * 2);
 		display: grid;
 	}
-	.dialog-box .fork-report .form .dragDrop-and-upload {
+	.dialog-box .fork-report .form .drag-drop-upload {
 		background: var(--color-surface);
 		color: var(--color-surface-text);
 		height: 100%;
@@ -1550,35 +1550,35 @@ body#tinymce table tr {
 					box-shadow var(--transition-duration),
 					color var(--transition-duration);
 	}
-	.dialog-box .fork-report .form .dragDrop-and-upload:active {
+	.dialog-box .fork-report .form .drag-drop-upload:active {
 		box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.15);
 	}
-	.dialog-box .fork-report .form .dragDrop-and-upload.drag-over {
+	.dialog-box .fork-report .form .drag-drop-upload.drag-over {
 		background: var(--color-hover);
 		color: var(--color-hover-text);
 	}
-		.dialog-box .fork-report .form .dragDrop-and-upload h2 {
+		.dialog-box .fork-report .form .drag-drop-upload h2 {
 			font-weight: normal;
 			font-size: calc(10px + 1vw);
 			margin: 0;
 			pointer-events: none;
 		}
-		.dialog-box .fork-report .form .dragDrop-and-upload span {
+		.dialog-box .fork-report .form .drag-drop-upload span {
 			font-size: calc(9px + 0.3vw);
 			margin: var(--gap) 0;
 			pointer-events: none;
 		}
-		.dialog-box .fork-report .form .dragDrop-and-upload .message {
+		.dialog-box .fork-report .form .drag-drop-upload .message {
 			background: none;
 			padding: 0;
 			box-shadow: none;
 			font-size: calc(10px + 0.8vw);
 			pointer-events: none;
 		}
-		.dialog-box .fork-report .form .dragDrop-and-upload .warning {
+		.dialog-box .fork-report .form .drag-drop-upload .warning {
 			color: var(--color-red);
 		}
-		.dialog-box .fork-report .form .dragDrop-and-upload .notice {
+		.dialog-box .fork-report .form .drag-drop-upload .notice {
 			color: var(--color-green);
 		}
 	.dialog-box .fork-report .form .connections label {

@@ -221,7 +221,6 @@ class DashboardsDashboard {
 			form: new FormData(DashboardsDashboard.form),
 		};
 
-
 		const parameters = {
 			format: DashboardsDashboard.editor.value,
 			parent: DashboardsDashboard.parentDashboardMultiselect.value[0] || '',

@@ -4134,7 +4134,7 @@ class ForkData {
 
 			<div class="forking-options"></div>
 
-			<div class="dragDrop-and-upload">
+			<div class="drag-drop-upload">
 				<input type="file" accept=".json" class="hidden">
 				<h2>Drop File Here</h2>
 				<span>Or click to upload&hellip;</span>
@@ -4197,13 +4197,13 @@ class ForkData {
 		container.querySelector('.switch-to-new').classList.toggle('hidden', this.status == 'Import');
 		container.querySelector('.export-footer').classList.toggle('hidden', this.status == 'Import');
 		container.querySelector('.import-footer').classList.toggle('hidden', this.status != 'Import');
-		container.querySelector('.dragDrop-and-upload').classList.toggle('hidden', this.status != 'Import');
+		container.querySelector('.drag-drop-upload').classList.toggle('hidden', this.status != 'Import');
 
 		container.querySelector('.footer .export').on('click', () => this.export());
 
 		const
-			dragInput = container.querySelector('.dragDrop-and-upload input'),
-			dragContainer = container.querySelector('.dragDrop-and-upload');
+			dragInput = container.querySelector('.drag-drop-upload input'),
+			dragContainer = container.querySelector('.drag-drop-upload');
 
 		dragInput.on('change', e => {
 
@@ -4457,7 +4457,7 @@ class ForkData {
 				index++;
 			}
 
-			this.container.querySelector('.dragDrop-and-upload input').value = '';
+			this.container.querySelector('.drag-drop-upload input').value = '';
 
 			const title = JSON.parse(this.uploadedFile).title;
 
@@ -4467,7 +4467,7 @@ class ForkData {
 
 	message(body = '', type = null) {
 
-		const message = this.container.querySelector('.dragDrop-and-upload .message');
+		const message = this.container.querySelector('.drag-drop-upload .message');
 
 		message.classList.remove('notice', 'warning');
 		message.classList.toggle('hidden', !body);
